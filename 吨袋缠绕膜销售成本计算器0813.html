@@ -1,0 +1,2857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吨袋缠绕膜成本计算器</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --light: #f8f9fa;
+            --dark: #34495e;
+            --border: #dee2e6;
+            --shadow: rgba(0,0,0,0.1);
+            --teal: #1abc9c;
+            --purple: #9b59b6;
+            --orange: #e67e22;
+            --film-blue: #3498db;
+            --bag-green: #2ecc71;
+            --labor-color: #f39c12;
+            --bundle-color: #9b59b6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.92;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+            align-items: start;
+        }
+        
+        @media (max-width: 992px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: auto;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+            font-size: 1.7rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 60px;
+        }
+        
+        .card h3 {
+            color: var(--secondary);
+            margin: 20px 0 15px;
+            font-size: 1.3rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .card h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 7px;
+            width: 6px;
+            height: 22px;
+            background: var(--secondary);
+            border-radius: 3px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            min-width: 160px;
+            flex: 1;
+        }
+        
+        button i {
+            font-size: 1.1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary), #217dbb);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9, #1a6ca3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--teal), #16a085);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), #c0392b);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, var(--purple), #8e44ad);
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background: linear-gradient(135deg, #8e44ad, #7d3c98);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .chart-container {
+            margin-top: 25px;
+            height: 280px;
+            position: relative;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .summary-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            letter-spacing: -0.5px;
+        }
+        
+        .summary-label {
+            font-size: 0.95rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .profit {
+            color: var(--success);
+        }
+        
+        .loss {
+            color: var(--accent);
+        }
+        
+        .input-label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .input-with-unit input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            font-size: 1.1rem;
+        }
+        
+        .input-unit {
+            background: #e9ecef;
+            padding: 0 12px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ced4da;
+            border-left: none;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            min-width: 80px;
+            font-size: 0.85rem;
+        }
+        
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .param-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+        
+        .bag-types-container, .film-types-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            background: white;
+        }
+        
+        .bag-type, .film-type {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .bag-type.selected, .film-type.selected {
+            background: #e3f2fd;
+            border: 2px solid var(--secondary);
+        }
+        
+        .bag-type:last-child, .film-type:last-child {
+            margin-bottom: 0;
+        }
+        
+        .bag-type:hover, .film-type:hover {
+            background: #e9f7ff;
+        }
+        
+        .bag-spec, .film-spec {
+            flex: 1;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+        
+        .bag-price, .film-price {
+            font-weight: bold;
+            min-width: 100px;
+            text-align: right;
+            color: var(--success);
+            font-size: 0.95rem;
+        }
+        
+        @media (max-width: 768px) {
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .cost-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        
+        .cost-detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .cost-detail-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        
+        .cost-detail-film {
+            border-left-color: var(--film-blue);
+        }
+        
+        .cost-detail-bag {
+            border-left-color: var(--bag-green);
+        }
+        
+        .cost-detail-labor {
+            border-left-color: var(--labor-color);
+        }
+        
+        .cost-detail-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+            padding-right: 40px;
+        }
+        
+        .cost-detail-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            margin: 8px 0;
+        }
+        
+        .cost-detail-explanation {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        
+        .profit-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .profit-item {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid var(--teal);
+            transition: all 0.3s ease;
+        }
+        
+        .profit-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        
+        .profit-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .profit-label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .currency-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: var(--secondary);
+            color: white;
+            margin-left: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 35px;
+            padding: 20px;
+            color: #718096;
+            font-size: 0.85rem;
+        }
+        
+        .calculation-info {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.85rem;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .calculation-info p {
+            margin: 4px 0;
+        }
+        
+        .formula {
+            font-family: monospace;
+            background: rgba(255,255,255,0.7);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 4px 0;
+            border: 1px dashed var(--secondary);
+            font-size: 0.85rem;
+        }
+        
+        .save-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            animation: fadeInOut 3s ease;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        .calculation-step {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            border-left: 4px solid var(--orange);
+        }
+        
+        .calculation-step h4 {
+            margin: 0 0 8px 0;
+            color: var(--orange);
+            font-size: 1.1rem;
+        }
+        
+        .formula-highlight {
+            background-color: #e1f5fe;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .toggle-container {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+        
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 45px;
+            height: 22px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 22px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(23px);
+        }
+        
+        .total-cost-display {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            border-radius: 10px;
+            padding: 18px;
+            margin: 15px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        
+        .bag-total-cost {
+            background: linear-gradient(135deg, var(--bag-green), #27ae60);
+        }
+        
+        .film-total-cost {
+            background: linear-gradient(135deg, var(--film-blue), #0d47a1);
+        }
+        
+        .total-cost-label {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .total-cost-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .total-cost-unit {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .cost-item-disabled {
+            opacity: 0.6;
+            background-color: #f8f9fa;
+        }
+        
+        .cost-item-disabled .cost-detail-value {
+            color: #95a5a6;
+        }
+        
+        .film-costs-section {
+            border: 2px solid var(--film-blue);
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 25px;
+            background: rgba(225, 245, 254, 0.15);
+        }
+        
+        .bag-costs-section {
+            border: 2px solid var(--bag-green);
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 25px;
+            background: rgba(232, 245, 233, 0.15);
+        }
+        
+        .capital-analysis {
+            background: linear-gradient(135deg, #f0f7ff, #e1f0ff);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        
+        .capital-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .capital-item {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--purple);
+            transition: all 0.3s ease;
+        }
+        
+        .capital-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.08);
+        }
+        
+        .capital-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .capital-label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .capital-unit {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .capital-section-title {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin: 20px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .capital-section-title i {
+            font-size: 1.1rem;
+            color: var(--purple);
+        }
+        
+        .cost-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .cost-detail-title-text {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1rem;
+            flex: 1;
+        }
+        
+        .analysis-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 992px) {
+            .analysis-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .analysis-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .full-width-item {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--purple);
+        }
+        
+        .full-width-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .cost-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .cost-summary-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid var(--teal);
+        }
+        
+        .cost-summary-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .cost-summary-label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .gross-margin-analysis {
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .gross-margin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .gross-margin-item {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--teal);
+        }
+        
+        .gross-margin-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .gross-margin-label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .capital-occupation-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .capital-occupation-input {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bundle-analysis {
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--bundle-color);
+        }
+        
+        .bundle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .bundle-item {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--bundle-color);
+        }
+        
+        .bundle-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin: 8px 0;
+            color: var(--bundle-color);
+        }
+        
+        .bundle-label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .bundle-calculation {
+            background: #f0f7ff;
+            border-left: 4px solid var(--bundle-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .sensitivity-analysis {
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--orange);
+        }
+        
+        .sensitivity-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .sensitivity-chart-container {
+            height: 250px;
+            margin-top: 20px;
+        }
+        
+        .currency-switch {
+            display: flex;
+            align-items: center;
+            background: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .currency-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .currency-option.active {
+            background: var(--secondary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .currency-option:not(.active):hover {
+            background: #d0e0f0;
+        }
+        
+        .factory-price-container {
+            display: grid;
+            grid-template-columns: 70% 30%;
+            gap: 8px;
+        }
+        
+        #factory-price, #film-factory-price {
+            width: 100%;
+        }
+        
+        #factory-price-currency, #film-factory-price-currency {
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        
+        .bundle-input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bundle-input-container input {
+            flex: 1;
+            font-size: 1.05rem;
+            text-align: center;
+        }
+        
+        .bag-radio {
+            display: none !important;
+        }
+        
+        .formula-highlight {
+            background-color: #e1f5fe;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .bag-spec {
+            padding-left: 0;
+        }
+        
+        .card-title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title-icon {
+            font-size: 1.8rem;
+            color: var(--secondary);
+        }
+        
+        .film-highlight {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .film-highlight h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .film-highlight .formula-highlight {
+            background-color: #bbdefb;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn-group button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .profit-analysis {
+                grid-template-columns: 1fr;
+            }
+            
+            .cost-details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cost-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .gross-margin-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .capital-occupation-inputs {
+                grid-template-columns: 1fr;
+            }
+            
+            .bundle-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sensitivity-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .factory-price-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .card h2 {
+                height: auto;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-boxes"></i> 吨袋缠绕膜成本计算器 - 优化版</h1>
+            <p class="subtitle">综合成本计算 | 成本优化分析 | 资金占用计算</p>
+        </header>
+        
+        <div class="save-notification" id="saveNotification">
+            <i class="fas fa-check-circle"></i> 配置已保存成功！
+        </div>
+        
+        <div class="grid">
+            <!-- 输入区 -->
+            <div class="card">
+                <div class="card-title-container">
+                    <h2><i class="fas fa-edit card-title-icon"></i> 成本参数输入</h2>
+                </div>
+                
+                <div class="param-grid">
+                    <div class="param-item">
+                        <label for="exchange-rate">人民币兑加币汇率</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="exchange-rate" value="0.186" step="0.001">
+                            <div class="input-unit">CNY/CAD</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="usd-to-cad">美元兑加币汇率</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="usd-to-cad" value="1.35" step="0.001">
+                            <div class="input-unit">CAD/USD</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="shipping-cost">海运费 + 报关费</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="shipping-cost" value="5000">
+                            <div class="input-unit">USD</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="pallet-storage">卡板仓储费</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="pallet-storage" value="16">
+                            <div class="input-unit">USD/月</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="pallet-handling">进仓出仓操作费</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="pallet-handling" value="25">
+                            <div class="input-unit">USD/卡板</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="storage-time">仓储时间</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="storage-time" value="2">
+                            <div class="input-unit">月</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="interest-rate">资金成本年利率</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="interest-rate" value="6" step="0.1">
+                            <div class="input-unit">%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="capital-time">资金占用时间</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="capital-time" value="4">
+                            <div class="input-unit">月</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3><i class="fas fa-user-tie"></i> 人工配置</h3>
+                    
+                    <div class="param-grid">
+                        <div class="param-item">
+                            <label for="labor-rate">人工价格</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="labor-rate" value="25">
+                                <div class="input-unit">$/小时</div>
+                            </div>
+                        </div>
+                        
+                        <div class="param-item">
+                            <label for="labor-count">雇佣人数</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="labor-count" value="1">
+                                <div class="input-unit">人</div>
+                            </div>
+                        </div>
+                        
+                        <div class="param-item">
+                            <label for="daily-hours">日工作时长</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="daily-hours" value="8">
+                                <div class="input-unit">小时/天</div>
+                            </div>
+                        </div>
+                        
+                        <div class="param-item">
+                            <label for="work-days">月工作天数</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="work-days" value="22">
+                                <div class="input-unit">天/月</div>
+                            </div>
+                        </div>
+                        
+                        <div class="param-item">
+                            <label for="monthly-bags">月销售吨袋预估</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="monthly-bags" value="12000">
+                                <div class="input-unit">袋/月</div>
+                            </div>
+                        </div>
+                        
+                        <div class="param-item">
+                            <label for="monthly-rolls">月销售缠绕膜预估</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="monthly-rolls" value="5000">
+                                <div class="input-unit">卷/月</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bag-costs-section">
+                    <h3><i class="fas fa-pallet"></i> 吨袋规格与采购成本</h3>
+                    
+                    <div class="bag-highlight">
+                        <div class="bag-info">
+                            <h3><span id="selected-bag-spec">38×38×68" 吨袋</span></h3>
+                            <div class="formula-highlight">
+                                销售价 = <span id="selected-bag-price">10.08</span> CAD/袋
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="tariff-bag">吨袋关税税率</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="tariff-bag" value="18" step="0.1">
+                            <div class="input-unit">%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="bag-under-declaration">吨袋低申报系数</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="bag-under-declaration" value="1.0" step="0.01" min="0.01" max="1.0">
+                            <div class="input-unit">系数</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="factory-price">工厂价格</label>
+                        <div class="currency-switch">
+                            <div class="currency-option active" data-currency="CNY">CNY</div>
+                            <div class="currency-option" data-currency="USD">USD</div>
+                        </div>
+                        <div class="factory-price-container">
+                            <input type="number" id="factory-price" value="15">
+                            <select id="factory-price-currency">
+                                <option value="CNY">CNY/袋</option>
+                                <option value="USD">USD/袋</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="container-size">集装箱容量</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="container-size" value="12000">
+                            <div class="input-unit">袋</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="bags-per-pallet">每卡板袋数</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="bags-per-pallet" value="200">
+                            <div class="input-unit">袋</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bag-types-container">
+                        <div class="bag-type selected" data-type="1" data-price="10.08">
+                            <div class="bag-spec">38×38×68" 吨袋</div>
+                            <div class="input-with-unit">
+                                <input type="number" id="bag-type1" class="bag-price-input" value="10.08">
+                                <div class="input-unit">CAD/袋</div>
+                            </div>
+                        </div>
+                        <div class="bag-type" data-type="2" data-price="9.14">
+                            <div class="bag-spec">38×38×57 SKT/DS</div>
+                            <div class="input-with-unit">
+                                <input type="number" id="bag-type2" class="bag-price-input" value="9.14">
+                                <div class="input-unit">CAD/袋</div>
+                            </div>
+                        </div>
+                        <div class="bag-type" data-type="3" data-price="10.34">
+                            <div class="bag-spec">42×42×66" 吨袋</div>
+                            <div class="input-with-unit">
+                                <input type="number" id="bag-type3" class="bag-price-input" value="10.34">
+                                <div class="input-unit">CAD/袋</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="film-costs-section">
+                    <h3><i class="fas fa-film"></i> 缠绕膜规格与采购成本</h3>
+                    
+                    <div class="film-highlight">
+                        <div class="film-info">
+                            <h3><i class="fas fa-info-circle"></i> 当前规格: <span id="selected-film-spec">80ga</span></h3>
+                            <div class="formula-highlight">
+                                销售价 = <span id="selected-film-price">15.00</span> CAD/卷
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="tariff-film">缠绕膜关税税率</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="tariff-film" value="0" step="0.1">
+                            <div class="input-unit">%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="film-under-declaration">缠绕膜低申报系数</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="film-under-declaration" value="1.0" step="0.01" min="0.01" max="1.0">
+                            <div class="input-unit">系数</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="film-usage">每吨袋缠绕膜用量</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="film-usage" value="30" step="0.1">
+                            <div class="input-unit">米/袋</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="film-length">缠绕膜长度</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="film-length" value="450">
+                            <div class="input-unit">米/卷</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="film-factory-price">工厂价格</label>
+                        <div class="currency-switch">
+                            <div class="currency-option active" data-currency="CNY">CNY</div>
+                            <div class="currency-option" data-currency="USD">USD</div>
+                        </div>
+                        <div class="factory-price-container">
+                            <input type="number" id="film-factory-price" value="20">
+                            <select id="film-factory-price-currency">
+                                <option value="CNY">CNY/卷</option>
+                                <option value="USD">USD/卷</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="rolls-per-container">每集装箱卷数</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="rolls-per-container" value="3200">
+                            <div class="input-unit">卷</div>
+                        </div>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label for="rolls-per-pallet">每卡板卷数</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="rolls-per-pallet" value="96">
+                            <div class="input-unit">卷</div>
+                        </div>
+                    </div>
+                    
+                    <div class="film-types-container">
+                        <div class="film-type" data-type="70ga" data-price="15">
+                            <div class="film-spec">70ga 缠绕膜</div>
+                            <div class="input-with-unit">
+                                <input type="number" id="film-type1" class="film-price-input" value="15">
+                                <div class="input-unit">CAD/卷</div>
+                            </div>
+                        </div>
+                        <div class="film-type selected" data-type="80ga" data-price="15">
+                            <div class="film-spec">80ga 缠绕膜</div>
+                            <div class="input-with-unit">
+                                <input type="number" id="film-type2" class="film-price-input" value="15">
+                                <div class="input-unit">CAD/卷</div>
+                            </div>
+                        </div>
+                        <div class="film-type" data-type="90ga" data-price="15">
+                            <div class="film-spec">90ga 缠绕膜</div>
+                            <div class="input-with-unit">
+                                <input type="number" id="film-type3" class="film-price-input" value="15">
+                                <div class="input-unit">CAD/卷</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="calculate()">
+                        <i class="fas fa-calculator"></i> 计算利润
+                    </button>
+                    <button class="btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-sync-alt"></i> 重置表单
+                    </button>
+                    <button class="btn-save" onclick="saveConfig()">
+                        <i class="fas fa-save"></i> 保存配置
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 成本与盈利分析 -->
+            <div class="card">
+                <div class="card-title-container">
+                    <h2><i class="fas fa-chart-line card-title-icon"></i> 成本与盈利分析</h2>
+                </div>
+                <div id="results">
+                    <div class="analysis-sections">
+                        <!-- 吨袋成本与盈利分析 -->
+                        <div class="analysis-section">
+                            <h3><i class="fas fa-pallet"></i> 吨袋成本与盈利分析</h3>
+                            
+                            <div class="cost-summary">
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">单袋总成本</div>
+                                    <div class="cost-summary-value" id="bag-total-cost">$4.79</div>
+                                    <div class="cost-summary-label">CAD/袋</div>
+                                </div>
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">销售价</div>
+                                    <div class="cost-summary-value" id="bag-sale-price">$10.08</div>
+                                    <div class="cost-summary-label">CAD/袋</div>
+                                </div>
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">单袋利润</div>
+                                    <div class="cost-summary-value profit" id="bag-profit-per">$5.29</div>
+                                    <div class="cost-summary-label">CAD/袋</div>
+                                </div>
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">毛利率</div>
+                                    <div class="cost-summary-value profit" id="bag-gross-margin">52.4%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="cost-details-grid">
+                                <div class="cost-detail-item cost-detail-bag">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">采购成本 <span class="unit">(CAD/袋)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-bag-purchase" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="bag-purchase-cost">$2.79</div>
+                                    <div class="cost-detail-explanation" id="bag-purchase-cost-explanation">工厂价格: ¥15 × 0.186 = $2.79</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-bag">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">海运费 <span class="unit">(CAD/袋)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-bag-shipping" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="bag-shipping-cost">$0.56</div>
+                                    <div class="cost-detail-explanation" id="bag-shipping-cost-explanation">$5000 × 1.35 ÷ 12000 = $0.5625</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-bag">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">关税 <span class="unit">(CAD/袋)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-bag-tariff" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="bag-tariff-cost">$0.60</div>
+                                    <div class="cost-detail-explanation" id="bag-tariff-cost-explanation">($2.79 + $0.56) × 18% = $0.6034</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-bag">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">仓储与操作 <span class="unit">(CAD/袋)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-bag-storage" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="bag-storage-cost">$0.38</div>
+                                    <div class="cost-detail-explanation" id="bag-storage-cost-explanation">($25 + $16 × 2) × 1.35 ÷ 200 = $0.3848</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-bag">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">资金成本 <span class="unit">(CAD/袋)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-bag-capital" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="bag-capital-cost">$0.09</div>
+                                    <div class="cost-detail-explanation" id="bag-capital-cost-explanation">($2.79+$0.56+$0.60+$0.38) × 6% × 4/12 = $0.0868</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-labor">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">人工成本 <span class="unit">(CAD/袋)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-bag-labor" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="bag-labor-cost">$0.37</div>
+                                    <div class="cost-detail-explanation" id="bag-labor-cost-explanation">($25 × 8 × 22 × 1) ÷ 12000 = $0.3667</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <canvas id="bagCostChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- 缠绕膜成本与盈利分析 -->
+                        <div class="analysis-section">
+                            <h3><i class="fas fa-film"></i> 缠绕膜成本与盈利分析</h3>
+                            
+                            <div class="cost-summary">
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">单卷总成本</div>
+                                    <div class="cost-summary-value" id="film-total-cost">$7.64</div>
+                                    <div class="cost-summary-label">CAD/卷</div>
+                                </div>
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">销售价</div>
+                                    <div class="cost-summary-value" id="film-sale-price">$15.00</div>
+                                    <div class="cost-summary-label">CAD/卷</div>
+                                </div>
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">单卷利润</div>
+                                    <div class="cost-summary-value profit" id="film-profit-per">$7.36</div>
+                                    <div class="cost-summary-label">CAD/卷</div>
+                                </div>
+                                <div class="cost-summary-item">
+                                    <div class="cost-summary-label">毛利率</div>
+                                    <div class="cost-summary-value profit" id="film-gross-margin">49.0%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="cost-details-grid">
+                                <div class="cost-detail-item cost-detail-film">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">采购成本 <span class="unit">(CAD/卷)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-film-purchase" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="film-purchase-cost">$3.72</div>
+                                    <div class="cost-detail-explanation" id="film-purchase-cost-explanation">工厂价格: ¥20 × 0.186 = $3.72</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-film">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">海运费 <span class="unit">(CAD/卷)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-film-shipping" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="film-shipping-cost">$2.11</div>
+                                    <div class="cost-detail-explanation" id="film-shipping-cost-explanation">$5000 × 1.35 ÷ 3200 = $2.1094</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-film">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">关税 <span class="unit">(CAD/卷)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-film-tariff" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="film-tariff-cost">$0.00</div>
+                                    <div class="cost-detail-explanation" id="film-tariff-cost-explanation">关税税率为0%，无需缴纳</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-film">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">仓储与操作 <span class="unit">(CAD/卷)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-film-storage" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="film-storage-cost">$0.80</div>
+                                    <div class="cost-detail-explanation" id="film-storage-cost-explanation">($25 + $16 × 2) × 1.35 ÷ 96 = $0.8016</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-film">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">资金成本 <span class="unit">(CAD/卷)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-film-capital" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="film-capital-cost">$0.13</div>
+                                    <div class="cost-detail-explanation" id="film-capital-cost-explanation">($3.72+$2.11+$0.00+$0.80) × 6% × 4/12 = $0.1326</div>
+                                </div>
+                                
+                                <div class="cost-detail-item cost-detail-labor">
+                                    <div class="cost-detail-header">
+                                        <div class="cost-detail-title-text">人工成本 <span class="unit">(CAD/卷)</span></div>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="toggle-film-labor" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="cost-detail-value" id="film-labor-cost">$0.88</div>
+                                    <div class="cost-detail-explanation" id="film-labor-cost-explanation">($25 × 8 × 22 × 1) ÷ 5000 = $0.8800</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <canvas id="filmCostChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 资金占用与毛利分析 -->
+                    <div class="gross-margin-analysis">
+                        <h3><i class="fas fa-money-bill-wave"></i> 资金占用与毛利分析</h3>
+                        
+                        <div class="capital-occupation-inputs">
+                            <div class="capital-occupation-input">
+                                <label for="bags-in-warehouse">吨袋在仓库数量</label>
+                                <input type="number" id="bags-in-warehouse" value="2">
+                            </div>
+                            <div class="capital-occupation-input">
+                                <label for="bags-at-sea">吨袋在海上数量</label>
+                                <input type="number" id="bags-at-sea" value="1">
+                            </div>
+                            <div class="capital-occupation-input">
+                                <label for="bags-in-china">吨袋在中国数量</label>
+                                <input type="number" id="bags-in-china" value="2">
+                            </div>
+                            
+                            <div class="capital-occupation-input">
+                                <label for="film-in-warehouse">缠绕膜在仓库数量</label>
+                                <input type="number" id="film-in-warehouse" value="1">
+                            </div>
+                            <div class="capital-occupation-input">
+                                <label for="film-at-sea">缠绕膜在海上数量</label>
+                                <input type="number" id="film-at-sea" value="2">
+                            </div>
+                            <div class="capital-occupation-input">
+                                <label for="film-in-china">缠绕膜在中国数量</label>
+                                <input type="number" id="film-in-china" value="1">
+                            </div>
+                        </div>
+                        
+                        <h4><i class="fas fa-pallet"></i> 吨袋毛利分析</h4>
+                        <div class="gross-margin-grid">
+                            <div class="gross-margin-item">
+                                <div class="gross-margin-label">整集装箱毛利</div>
+                                <div class="gross-margin-value profit" id="bag-container-profit">$63,429.83</div>
+                                <div class="capital-unit">CAD/集装箱</div>
+                            </div>
+                            <div class="gross-margin-item">
+                                <div class="gross-margin-label">整卡板毛利</div>
+                                <div class="gross-margin-value profit" id="bag-pallet-profit">$1,057.16</div>
+                                <div class="capital-unit">CAD/卡板</div>
+                            </div>
+                        </div>
+                        
+                        <h4><i class="fas fa-film"></i> 缠绕膜毛利分析</h4>
+                        <div class="gross-margin-grid">
+                            <div class="gross-margin-item">
+                                <div class="gross-margin-label">整集装箱毛利</div>
+                                <div class="gross-margin-value profit" id="film-container-profit">$23,540.62</div>
+                                <div class="capital-unit">CAD/集装箱</div>
+                            </div>
+                            <div class="gross-margin-item">
+                                <div class="gross-margin-label">整卡板毛利</div>
+                                <div class="gross-margin-value profit" id="film-pallet-profit">$706.22</div>
+                                <div class="capital-unit">CAD/卡板</div>
+                            </div>
+                        </div>
+                        
+                        <h4><i class="fas fa-coins"></i> 资金占用分析</h4>
+                        <div class="capital-analysis">
+                            <div class="capital-grid">
+                                <div class="capital-item">
+                                    <div class="capital-label">吨袋总资金占用</div>
+                                    <div class="capital-value" id="bag-capital-total">$167,400.00</div>
+                                    <div class="capital-unit">CAD</div>
+                                </div>
+                                <div class="capital-item">
+                                    <div class="capital-label">缠绕膜总资金占用</div>
+                                    <div class="capital-value" id="film-capital-total">$47,616.00</div>
+                                    <div class="capital-unit">CAD</div>
+                                </div>
+                                <div class="capital-item">
+                                    <div class="capital-label">吨袋集装箱资金占用</div>
+                                    <div class="capital-value" id="bag-container-capital">$33,480.00</div>
+                                    <div class="capital-unit">CAD</div>
+                                </div>
+                                <div class="capital-item">
+                                    <div class="capital-label">缠绕膜集装箱资金占用</div>
+                                    <div class="capital-value" id="film-container-capital">$14,880.00</div>
+                                    <div class="capital-unit">CAD</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 捆绑销售分析 -->
+                    <div class="bundle-analysis">
+                        <h3><i class="fas fa-boxes"></i> 捆绑销售分析</h3>
+                        
+                        <div class="bundle-grid">
+                            <div class="bundle-item">
+                                <div class="bundle-label">每个吨袋所需缠绕膜</div>
+                                <div class="bundle-value" id="film-per-bag">0.067</div>
+                                <div class="bundle-label">卷/袋</div>
+                            </div>
+                            <div class="bundle-item">
+                                <div class="bundle-label">捆绑销售折扣率</div>
+                                <div class="bundle-input-container">
+                                    <input type="number" id="bundle-discount" value="5.0" step="0.1">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="bundle-item">
+                                <div class="bundle-label">捆绑销售利润提升</div>
+                                <div class="bundle-value profit" id="profit-increase">$0.20</div>
+                                <div class="bundle-label">CAD/套</div>
+                            </div>
+                            <div class="bundle-item">
+                                <div class="bundle-label">捆绑销售毛利率</div>
+                                <div class="bundle-value" id="bundle-gross-margin">49.5%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bundle-calculation">
+                            <h4><i class="fas fa-calculator"></i> 利润提升计算方法</h4>
+                            <p>捆绑销售利润提升 = (吨袋利润 + 缠绕膜利润 × 每袋缠绕膜卷数) × (1 + 捆绑折扣率) - 吨袋利润</p>
+                            <div class="formula-highlight">
+                                利润提升 = ($5.29 + $7.36 × 0.067) × 1.05 - $5.29 = $0.20
+                            </div>
+                            <p>捆绑销售毛利率 = (捆绑销售利润提升 + 吨袋利润) / (吨袋售价 + 缠绕膜售价 × 每袋缠绕膜卷数)</p>
+                            <div class="formula-highlight">
+                                毛利率 = ($0.20 + $5.29) / ($10.08 + $15.00 × 0.067) = 49.5%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 敏感性分析 -->
+                    <div class="sensitivity-analysis">
+                        <h3><i class="fas fa-chart-line"></i> 毛利率敏感性分析</h3>
+                        
+                        <div class="sensitivity-grid">
+                            <div class="param-item">
+                                <label for="sensitivity-var">分析变量</label>
+                                <select id="sensitivity-var">
+                                    <option value="exchange-rate">人民币汇率</option>
+                                    <option value="shipping-cost">海运费</option>
+                                    <option value="bag-sale-price">吨袋销售价</option>
+                                    <option value="film-sale-price">缠绕膜销售价</option>
+                                </select>
+                            </div>
+                            
+                            <div class="param-item">
+                                <label for="sensitivity-range">变化范围</label>
+                                <select id="sensitivity-range">
+                                    <option value="10">±10%</option>
+                                    <option value="20">±20%</option>
+                                    <option value="30">±30%</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="sensitivity-chart-container">
+                            <canvas id="sensitivityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 吨袋缠绕膜销售分析系统 | 专业优化版</p>
+        </footer>
+    </div>
+
+    <script>
+        // 图表实例
+        let bagCostChart = null;
+        let filmCostChart = null;
+        let sensitivityChart = null;
+        let currentBagType = "1";
+        let currentFilmType = "80ga";
+        
+        // 计算函数 - 修复版
+        function calculate() {
+            try {
+                // 获取用户输入
+                const exchangeRate = parseFloat(document.getElementById('exchange-rate').value) || 0.186;
+                const usdToCad = parseFloat(document.getElementById('usd-to-cad').value) || 1.35;
+                const shippingCost = parseFloat(document.getElementById('shipping-cost').value) || 5000;
+                const palletStorage = parseFloat(document.getElementById('pallet-storage').value) || 16;
+                const palletHandling = parseFloat(document.getElementById('pallet-handling').value) || 25;
+                const storageTime = parseFloat(document.getElementById('storage-time').value) || 2;
+                const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100 || 0.06;
+                const capitalTime = parseFloat(document.getElementById('capital-time').value) / 12 || 0.333; // 4个月
+                
+                // 低申报系数
+                const bagUnderDeclaration = parseFloat(document.getElementById('bag-under-declaration').value) || 1.0;
+                const filmUnderDeclaration = parseFloat(document.getElementById('film-under-declaration').value) || 1.0;
+                
+                // 吨袋参数
+                const tariffBagRate = parseFloat(document.getElementById('tariff-bag').value) / 100 || 0.18;
+                const factoryPrice = parseFloat(document.getElementById('factory-price').value) || 15;
+                const bagCurrency = document.getElementById('factory-price-currency').value;
+                const containerSize = parseFloat(document.getElementById('container-size').value) || 12000;
+                const bagsPerPallet = parseFloat(document.getElementById('bags-per-pallet').value) || 200;
+                
+                // 缠绕膜参数
+                const tariffFilmRate = parseFloat(document.getElementById('tariff-film').value) / 100 || 0.00;
+                const filmUsagePerBag = parseFloat(document.getElementById('film-usage').value) || 30;
+                const filmLength = parseFloat(document.getElementById('film-length').value) || 450;
+                const filmFactoryPrice = parseFloat(document.getElementById('film-factory-price').value) || 20;
+                const filmCurrency = document.getElementById('film-factory-price-currency').value;
+                const rollsPerContainer = parseFloat(document.getElementById('rolls-per-container').value) || 3200;
+                const rollsPerPallet = parseFloat(document.getElementById('rolls-per-pallet').value) || 96;
+                
+                // 人工参数
+                const laborRate = parseFloat(document.getElementById('labor-rate').value) || 25;
+                const laborCount = parseFloat(document.getElementById('labor-count').value) || 1;
+                const dailyHours = parseFloat(document.getElementById('daily-hours').value) || 8;
+                const workDays = parseFloat(document.getElementById('work-days').value) || 22;
+                const monthlyBags = parseFloat(document.getElementById('monthly-bags').value) || 12000;
+                const monthlyRolls = parseFloat(document.getElementById('monthly-rolls').value) || 5000;
+                
+                // 从选中的吨袋规格获取销售价
+                const bagSalePrice = parseFloat(document.querySelector(`.bag-type.selected .bag-price-input`).value) || 10.08;
+                // 从选中的缠绕膜规格获取销售价
+                const filmRetailPrice = parseFloat(document.querySelector(`.film-type.selected .film-price-input`).value) || 15.00;
+                
+                // 计算吨袋采购成本
+                let bagPurchaseCost;
+                if (bagCurrency === 'CNY') {
+                    bagPurchaseCost = factoryPrice * exchangeRate;
+                } else { // USD
+                    bagPurchaseCost = factoryPrice * usdToCad;
+                }
+                
+                // 计算吨袋海运费（乘以低申报系数）
+                const bagShippingPerBag = (shippingCost * usdToCad) / containerSize;
+                const declaredBagValue = bagPurchaseCost * bagUnderDeclaration;
+                const bagTariffCost = (declaredBagValue + bagShippingPerBag) * tariffBagRate;
+
+                const bagStorageCost = (palletHandling + palletStorage * storageTime) * usdToCad / bagsPerPallet;
+                const bagLaborCost = (laborRate * dailyHours * workDays * laborCount) / monthlyBags;
+                
+                // 获取开关状态
+                const toggleBagPurchase = document.getElementById('toggle-bag-purchase').checked ? 1 : 0;
+                const toggleBagShipping = document.getElementById('toggle-bag-shipping').checked ? 1 : 0;
+                const toggleBagTariff = document.getElementById('toggle-bag-tariff').checked ? 1 : 0;
+                const toggleBagStorage = document.getElementById('toggle-bag-storage').checked ? 1 : 0;
+                const toggleBagCapital = document.getElementById('toggle-bag-capital').checked ? 1 : 0;
+                const toggleBagLabor = document.getElementById('toggle-bag-labor').checked ? 1 : 0;
+                
+                // 计算基础成本（仅包含开启的成本项）
+                let bagBaseCost = 0;
+                bagBaseCost += bagPurchaseCost * toggleBagPurchase;
+                bagBaseCost += bagShippingPerBag * toggleBagShipping;
+                bagBaseCost += bagTariffCost * toggleBagTariff;
+                bagBaseCost += bagStorageCost * toggleBagStorage;
+                
+                // 计算资金成本（基于开启的基础成本）
+                const bagCapitalCost = bagBaseCost * interestRate * capitalTime;
+                
+                // 计算吨袋总成本（包含所有开启的成本项）
+                const bagTotalCost = bagBaseCost + 
+                                    (bagCapitalCost * toggleBagCapital) + 
+                                    (bagLaborCost * toggleBagLabor);
+                
+                // 计算吨袋利润（按袋）
+                const bagProfitPerBag = bagSalePrice - bagTotalCost;
+                const bagGrossMargin = (bagProfitPerBag / bagSalePrice * 100).toFixed(1);
+                
+                // 计算缠绕膜采购成本
+                let filmPurchaseCostPerRoll;
+                if (filmCurrency === 'CNY') {
+                    filmPurchaseCostPerRoll = filmFactoryPrice * exchangeRate;
+                } else { // USD
+                    filmPurchaseCostPerRoll = filmFactoryPrice * usdToCad;
+                }
+                
+                // 计算缠绕膜海运费（乘以低申报系数）
+                const filmShippingPerRoll = (shippingCost * usdToCad) / rollsPerContainer;
+                const declaredFilmValue = filmPurchaseCostPerRoll * filmUnderDeclaration;
+                const filmTariffCostPerRoll = (declaredFilmValue + filmShippingPerRoll) * tariffFilmRate;
+                const filmStorageCostPerRoll = (palletHandling + palletStorage * storageTime) * usdToCad / rollsPerPallet;
+                const filmLaborCost = (laborRate * dailyHours * workDays * laborCount) / monthlyRolls;
+                
+                // 获取开关状态
+                const toggleFilmPurchase = document.getElementById('toggle-film-purchase').checked ? 1 : 0;
+                const toggleFilmShipping = document.getElementById('toggle-film-shipping').checked ? 1 : 0;
+                const toggleFilmTariff = document.getElementById('toggle-film-tariff').checked ? 1 : 0;
+                const toggleFilmStorage = document.getElementById('toggle-film-storage').checked ? 1 : 0;
+                const toggleFilmCapital = document.getElementById('toggle-film-capital').checked ? 1 : 0;
+                const toggleFilmLabor = document.getElementById('toggle-film-labor').checked ? 1 : 0;
+                
+                // 计算基础成本（仅包含开启的成本项）
+                let filmBaseCost = 0;
+                filmBaseCost += filmPurchaseCostPerRoll * toggleFilmPurchase;
+                filmBaseCost += filmShippingPerRoll * toggleFilmShipping;
+                filmBaseCost += filmTariffCostPerRoll * toggleFilmTariff;
+                filmBaseCost += filmStorageCostPerRoll * toggleFilmStorage;
+                
+                // 计算资金成本（基于开启的基础成本）
+                const filmCapitalCostPerRoll = filmBaseCost * interestRate * capitalTime;
+                
+                // 计算缠绕膜总成本（包含所有开启的成本项）
+                const filmTotalCostPerRoll = filmBaseCost + 
+                                            (filmCapitalCostPerRoll * toggleFilmCapital) + 
+                                            (filmLaborCost * toggleFilmLabor);
+                
+                // 计算缠绕膜利润（按卷）
+                const filmProfitPerRoll = filmRetailPrice - filmTotalCostPerRoll;
+                const filmGrossMargin = (filmProfitPerRoll / filmRetailPrice * 100).toFixed(1);
+                
+                // 更新吨袋结果
+                document.getElementById('bag-total-cost').textContent = `$${bagTotalCost.toFixed(2)}`;
+                document.getElementById('bag-sale-price').textContent = `$${bagSalePrice.toFixed(2)}`;
+                document.getElementById('bag-profit-per').textContent = `$${bagProfitPerBag.toFixed(2)}`;
+                document.getElementById('bag-gross-margin').textContent = `${bagGrossMargin}%`;
+                
+                // 更新吨袋成本
+                document.getElementById('bag-purchase-cost').textContent = `$${(bagPurchaseCost * toggleBagPurchase).toFixed(2)}`;
+                document.getElementById('bag-shipping-cost').textContent = `$${(bagShippingPerBag * toggleBagShipping).toFixed(2)}`;
+                document.getElementById('bag-tariff-cost').textContent = `$${(bagTariffCost * toggleBagTariff).toFixed(2)}`;
+                document.getElementById('bag-storage-cost').textContent = `$${(bagStorageCost * toggleBagStorage).toFixed(2)}`;
+                document.getElementById('bag-capital-cost').textContent = `$${(bagCapitalCost * toggleBagCapital).toFixed(2)}`;
+                document.getElementById('bag-labor-cost').textContent = `$${(bagLaborCost * toggleBagLabor).toFixed(2)}`;
+                
+                // 更新公式说明
+                document.getElementById('bag-purchase-cost-explanation').textContent = 
+                    bagCurrency === 'CNY' 
+                        ? `工厂价格: ¥${factoryPrice} × ${exchangeRate} = $${bagPurchaseCost.toFixed(2)}` 
+                        : `工厂价格: $${factoryPrice} × ${usdToCad} = $${bagPurchaseCost.toFixed(2)}`;
+                
+                document.getElementById('bag-shipping-cost-explanation').textContent =
+                    `$${shippingCost} × ${usdToCad} ÷ ${containerSize} = $${bagShippingPerBag.toFixed(4)}`;
+                
+                document.getElementById('bag-tariff-cost-explanation').textContent = 
+                    `(${bagPurchaseCost.toFixed(2)} × ${bagUnderDeclaration} + ${bagShippingPerBag.toFixed(2)}) × ${(tariffBagRate*100).toFixed(1)}% = $${bagTariffCost.toFixed(4)}`;
+                
+                document.getElementById('bag-storage-cost-explanation').textContent = 
+                    `($${palletHandling} + $${palletStorage} × ${storageTime}) × ${usdToCad} ÷ ${bagsPerPallet} = $${bagStorageCost.toFixed(4)}`;
+                
+                document.getElementById('bag-capital-cost-explanation').textContent = 
+                    `(${bagBaseCost.toFixed(2)}) × ${(interestRate*100).toFixed(1)}% × ${(capitalTime*12).toFixed(0)}/12 = $${bagCapitalCost.toFixed(4)}`;
+                
+                document.getElementById('bag-labor-cost-explanation').textContent = 
+                    `($${laborRate} × ${dailyHours} × ${workDays} × ${laborCount}) ÷ ${monthlyBags} = $${bagLaborCost.toFixed(4)}`;
+                
+                // 更新缠绕膜结果
+                document.getElementById('film-total-cost').textContent = `$${filmTotalCostPerRoll.toFixed(2)}`;
+                document.getElementById('film-sale-price').textContent = `$${filmRetailPrice.toFixed(2)}`;
+                document.getElementById('film-profit-per').textContent = `$${filmProfitPerRoll.toFixed(2)}`;
+                document.getElementById('film-gross-margin').textContent = `${filmGrossMargin}%`;
+                
+                // 更新公式说明
+                document.getElementById('film-purchase-cost-explanation').textContent = 
+                    filmCurrency === 'CNY' 
+                        ? `工厂价格: ¥${filmFactoryPrice} × ${exchangeRate} = $${filmPurchaseCostPerRoll.toFixed(4)}`
+                        : `工厂价格: $${filmFactoryPrice} × ${usdToCad} = $${filmPurchaseCostPerRoll.toFixed(4)}`;
+                
+                document.getElementById('film-shipping-cost-explanation').textContent = 
+                    `$${shippingCost} × ${usdToCad} ÷ ${rollsPerContainer} = $${filmShippingPerRoll.toFixed(4)}`;
+                
+                document.getElementById('film-tariff-cost-explanation').textContent = 
+                    tariffFilmRate > 0 
+                        ? `(${filmPurchaseCostPerRoll.toFixed(2)} × ${filmUnderDeclaration} + ${filmShippingPerRoll.toFixed(2)}) × ${(tariffFilmRate*100).toFixed(1)}% = $${filmTariffCostPerRoll.toFixed(4)}`
+                        : "关税税率为0%，无需缴纳";
+                
+                document.getElementById('film-storage-cost-explanation').textContent = 
+                    `($${palletHandling} + $${palletStorage} × ${storageTime}) × ${usdToCad} ÷ ${rollsPerPallet} = $${filmStorageCostPerRoll.toFixed(4)}`;
+                
+                document.getElementById('film-capital-cost-explanation').textContent = 
+                    `(${filmBaseCost.toFixed(2)}) × ${(interestRate*100).toFixed(1)}% × ${(capitalTime*12).toFixed(0)}/12 = $${filmCapitalCostPerRoll.toFixed(4)}`;
+                
+                document.getElementById('film-labor-cost-explanation').textContent = 
+                    `($${laborRate} × ${dailyHours} × ${workDays} × ${laborCount}) ÷ ${monthlyRolls} = $${filmLaborCost.toFixed(4)}`;
+                
+                // 更新成本结构图表
+                updateBagCostChart(
+                    bagPurchaseCost * toggleBagPurchase,
+                    bagShippingPerBag * toggleBagShipping,
+                    bagTariffCost * toggleBagTariff,
+                    bagStorageCost * toggleBagStorage,
+                    bagCapitalCost * toggleBagCapital,
+                    bagLaborCost * toggleBagLabor
+                );
+                
+                updateFilmCostChart(
+                    filmPurchaseCostPerRoll * toggleFilmPurchase,
+                    filmShippingPerRoll * toggleFilmShipping,
+                    filmTariffCostPerRoll * toggleFilmTariff,
+                    filmStorageCostPerRoll * toggleFilmStorage,
+                    filmCapitalCostPerRoll * toggleFilmCapital,
+                    filmLaborCost * toggleFilmLabor
+                );
+                
+                // 更新开关UI状态
+                updateToggleUI();
+                
+                // 计算并更新资金占用与毛利分析
+                calculateGrossMarginAndCapital(
+                    bagProfitPerBag, 
+                    filmProfitPerRoll,
+                    containerSize,
+                    bagsPerPallet,
+                    rollsPerContainer,
+                    rollsPerPallet,
+                    bagPurchaseCost,
+                    filmPurchaseCostPerRoll,
+                    bagSalePrice,
+                    filmRetailPrice
+                );
+                
+                // 计算并更新捆绑销售分析
+                calculateBundleAnalysis(
+                    bagProfitPerBag,
+                    filmProfitPerRoll,
+                    filmUsagePerBag,
+                    filmLength,
+                    bagSalePrice,
+                    filmRetailPrice
+                );
+                
+                // 更新敏感性分析
+                updateSensitivityAnalysis(
+                    exchangeRate,
+                    shippingCost,
+                    bagSalePrice,
+                    filmRetailPrice,
+                    bagTotalCost,
+                    filmTotalCostPerRoll,
+                    bagShippingPerBag,
+                    filmShippingPerRoll,
+                    usdToCad,
+                    containerSize,
+                    rollsPerContainer
+                );
+            } catch (error) {
+                console.error('计算错误:', error);
+                alert('计算过程中发生错误，请检查输入值: ' + error.message);
+            }
+        }
+        
+        // 计算并更新资金占用与毛利分析
+        function calculateGrossMarginAndCapital(
+            bagProfitPerBag, 
+            filmProfitPerRoll,
+            containerSize,
+            bagsPerPallet,
+            rollsPerContainer,
+            rollsPerPallet,
+            bagPurchaseCost,
+            filmPurchaseCostPerRoll,
+            bagSalePrice,
+            filmRetailPrice
+        ) {
+            // 获取资金占用输入
+            const bagsInWarehouse = parseInt(document.getElementById('bags-in-warehouse').value) || 2;
+            const bagsAtSea = parseInt(document.getElementById('bags-at-sea').value) || 1;
+            const bagsInChina = parseInt(document.getElementById('bags-in-china').value) || 2;
+            const filmInWarehouse = parseInt(document.getElementById('film-in-warehouse').value) || 1;
+            const filmAtSea = parseInt(document.getElementById('film-at-sea').value) || 2;
+            const filmInChina = parseInt(document.getElementById('film-in-china').value) || 1;
+            
+            // 计算吨袋毛利
+            const bagContainerProfit = bagProfitPerBag * containerSize;
+            const bagPalletProfit = bagProfitPerBag * bagsPerPallet;
+            
+            // 计算缠绕膜毛利
+            const filmContainerProfit = filmProfitPerRoll * rollsPerContainer;
+            const filmPalletProfit = filmProfitPerRoll * rollsPerPallet;
+            
+            // 计算资金占用
+            const bagCapitalTotal = (bagsInWarehouse + bagsAtSea + bagsInChina) * containerSize * bagPurchaseCost;
+            const filmCapitalTotal = (filmInWarehouse + filmAtSea + filmInChina) * rollsPerContainer * filmPurchaseCostPerRoll;
+            
+            // 计算集装箱资金占用
+            const bagContainerCapital = containerSize * bagPurchaseCost;
+            const filmContainerCapital = rollsPerContainer * filmPurchaseCostPerRoll;
+            
+            // 更新毛利分析
+            document.getElementById('bag-container-profit').textContent = `$${bagContainerProfit.toFixed(2)}`;
+            document.getElementById('bag-pallet-profit').textContent = `$${bagPalletProfit.toFixed(2)}`;
+            document.getElementById('film-container-profit').textContent = `$${filmContainerProfit.toFixed(2)}`;
+            document.getElementById('film-pallet-profit').textContent = `$${filmPalletProfit.toFixed(2)}`;
+            
+            // 更新资金占用分析
+            document.getElementById('bag-capital-total').textContent = `$${bagCapitalTotal.toFixed(2)}`;
+            document.getElementById('film-capital-total').textContent = `$${filmCapitalTotal.toFixed(2)}`;
+            document.getElementById('bag-container-capital').textContent = `$${bagContainerCapital.toFixed(2)}`;
+            document.getElementById('film-container-capital').textContent = `$${filmContainerCapital.toFixed(2)}`;
+        }
+        
+        // 计算捆绑销售分析
+        function calculateBundleAnalysis(
+            bagProfitPerBag,
+            filmProfitPerRoll,
+            filmUsagePerBag,
+            filmLength,
+            bagSalePrice,
+            filmRetailPrice
+        ) {
+            // 计算每个吨袋需要的缠绕膜卷数
+            const filmPerBag = filmUsagePerBag / filmLength;
+            
+            // 获取捆绑销售折扣率（用户输入）
+            const bundleDiscount = parseFloat(document.getElementById('bundle-discount').value) / 100 || 0.05;
+            
+            // 计算捆绑销售利润提升
+            const bundleProfit = (bagProfitPerBag + (filmPerBag * filmProfitPerRoll)) * (1 - bundleDiscount);
+            const bundleProfitIncrease = bundleProfit - bagProfitPerBag;
+            
+            // 计算捆绑销售毛利率
+            const bundleRevenue = bagSalePrice + (filmPerBag * filmRetailPrice);
+            const bundleGrossMargin = (bundleProfit / bundleRevenue * 100).toFixed(1);
+            
+            // 更新捆绑销售分析
+            document.getElementById('film-per-bag').textContent = filmPerBag.toFixed(3);
+            document.getElementById('profit-increase').textContent = `$${bundleProfitIncrease.toFixed(2)}`;
+            document.getElementById('bundle-gross-margin').textContent = `${bundleGrossMargin}%`;
+            
+            // 更新公式说明
+            const bundleFormula = document.querySelector('.bundle-calculation .formula-highlight');
+            bundleFormula.textContent = 
+                `利润提升 = ($${bagProfitPerBag.toFixed(2)} + $${filmProfitPerRoll.toFixed(2)} × ${filmPerBag.toFixed(3)}) × ${(1 + bundleDiscount).toFixed(2)} - $${bagProfitPerBag.toFixed(2)} = $${bundleProfitIncrease.toFixed(2)}`;
+            
+            const marginFormula = document.querySelectorAll('.bundle-calculation .formula-highlight')[1];
+            marginFormula.textContent = 
+                `毛利率 = ($${bundleProfitIncrease.toFixed(2)} + $${bagProfitPerBag.toFixed(2)}) / ($${bagSalePrice.toFixed(2)} + $${filmRetailPrice.toFixed(2)} × ${filmPerBag.toFixed(3)}) = ${bundleGrossMargin}%`;
+        }
+        
+        // 更新敏感性分析
+        function updateSensitivityAnalysis(
+            exchangeRate,
+            shippingCost,
+            bagSalePrice,
+            filmRetailPrice,
+            bagTotalCost,
+            filmTotalCostPerRoll,
+            originalBagShippingPerBag,
+            originalFilmShippingPerRoll,
+            usdToCad,
+            containerSize,
+            rollsPerContainer
+        ) {
+            const sensitivityVar = document.getElementById('sensitivity-var').value;
+            const sensitivityRange = parseInt(document.getElementById('sensitivity-range').value) || 20;
+            
+            const labels = [];
+            const bagMargins = [];
+            const filmMargins = [];
+            
+            // 生成数据点
+            for (let i = -sensitivityRange; i <= sensitivityRange; i += 5) {
+                let value, bagMargin, filmMargin;
+                
+                switch (sensitivityVar) {
+                    case 'exchange-rate':
+                        value = exchangeRate * (1 + i / 100);
+                        labels.push(`${i}%`);
+                        bagMargin = ((bagSalePrice - (bagTotalCost - (bagTotalCost * 0.3) + (bagTotalCost * 0.3 * (value / exchangeRate)))) / bagSalePrice * 100).toFixed(1);
+                        filmMargin = ((filmRetailPrice - (filmTotalCostPerRoll - (filmTotalCostPerRoll * 0.3) + (filmTotalCostPerRoll * 0.3 * (value / exchangeRate)))) / filmRetailPrice * 100).toFixed(1);
+                        break;
+                    case 'shipping-cost':
+                        value = shippingCost * (1 + i / 100);
+                        labels.push(`${i}%`);
+                        const bagShippingChange = (value - shippingCost) * usdToCad / containerSize;
+                        bagMargin = ((bagSalePrice - (bagTotalCost + bagShippingChange)) / bagSalePrice * 100).toFixed(1);
+                        
+                        const filmShippingChange = (value - shippingCost) * usdToCad / rollsPerContainer;
+                        filmMargin = ((filmRetailPrice - (filmTotalCostPerRoll + filmShippingChange)) / filmRetailPrice * 100).toFixed(1);
+                        break;
+                    case 'bag-sale-price':
+                        value = bagSalePrice * (1 + i / 100);
+                        labels.push(`${i}%`);
+                        bagMargin = ((value - bagTotalCost) / value * 100).toFixed(1);
+                        filmMargin = ((filmRetailPrice - filmTotalCostPerRoll) / filmRetailPrice * 100).toFixed(1);
+                        break;
+                    case 'film-sale-price':
+                        value = filmRetailPrice * (1 + i / 100);
+                        labels.push(`${i}%`);
+                        bagMargin = ((bagSalePrice - bagTotalCost) / bagSalePrice * 100).toFixed(1);
+                        filmMargin = ((value - filmTotalCostPerRoll) / value * 100).toFixed(1);
+                        break;
+                }
+                
+                bagMargins.push(parseFloat(bagMargin));
+                filmMargins.push(parseFloat(filmMargin));
+            }
+            
+            // 更新敏感性分析图表
+            updateSensitivityChart(labels, bagMargins, filmMargins, sensitivityVar);
+        }
+        
+        // 更新吨袋成本结构图表
+        function updateBagCostChart(purchase, shipping, tariff, storage, capital, labor) {
+            const canvas = document.getElementById('bagCostChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 销毁现有图表实例
+            if (bagCostChart) {
+                bagCostChart.destroy();
+            }
+            
+            const totalCost = purchase + shipping + tariff + storage + capital + labor;
+            
+            bagCostChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        `采购成本 (${totalCost > 0 ? (purchase/totalCost*100).toFixed(1) : 0}%)`, 
+                        `海运费 (${totalCost > 0 ? (shipping/totalCost*100).toFixed(1) : 0}%)`,
+                        `关税 (${totalCost > 0 ? (tariff/totalCost*100).toFixed(1) : 0}%)`,
+                        `仓储操作 (${totalCost > 0 ? (storage/totalCost*100).toFixed(1) : 0}%)`,
+                        `资金成本 (${totalCost > 0 ? (capital/totalCost*100).toFixed(1) : 0}%)`,
+                        `人工成本 (${totalCost > 0 ? (labor/totalCost*100).toFixed(1) : 0}%)`
+                    ],
+                    datasets: [{
+                        data: [purchase, shipping, tariff, storage, capital, labor],
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#f1c40f'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '吨袋成本结构 (CAD/袋)',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: $${value.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新缠绕膜成本结构图表
+        function updateFilmCostChart(purchase, shipping, tariff, storage, capital, labor) {
+            const canvas = document.getElementById('filmCostChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 销毁现有图表实例
+            if (filmCostChart) {
+                filmCostChart.destroy();
+            }
+            
+            const totalCost = purchase + shipping + tariff + storage + capital + labor;
+            
+            filmCostChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        `采购成本 (${totalCost > 0 ? (purchase/totalCost*100).toFixed(1) : 0}%)`, 
+                        `海运费 (${totalCost > 0 ? (shipping/totalCost*100).toFixed(1) : 0}%)`,
+                        `关税 (${totalCost > 0 ? (tariff/totalCost*100).toFixed(1) : 0}%)`,
+                        `仓储操作 (${totalCost > 0 ? (storage/totalCost*100).toFixed(1) : 0}%)`,
+                        `资金成本 (${totalCost > 0 ? (capital/totalCost*100).toFixed(1) : 0}%)`,
+                        `人工成本 (${totalCost > 0 ? (labor/totalCost*100).toFixed(1) : 0}%)`
+                    ],
+                    datasets: [{
+                        data: [purchase, shipping, tariff, storage, capital, labor],
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#f1c40f'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '缠绕膜成本结构 (CAD/卷)',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: $${value.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新敏感性分析图表
+        function updateSensitivityChart(labels, bagMargins, filmMargins, sensitivityVar) {
+            const canvas = document.getElementById('sensitivityChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 销毁现有图表实例
+            if (sensitivityChart) {
+                sensitivityChart.destroy();
+            }
+            
+            let title = '';
+            switch (sensitivityVar) {
+                case 'exchange-rate':
+                    title = '汇率变化对毛利率的影响';
+                    break;
+                case 'shipping-cost':
+                    title = '海运费变化对毛利率的影响';
+                    break;
+                case 'bag-sale-price':
+                    title = '吨袋售价变化对毛利率的影响';
+                    break;
+                case 'film-sale-price':
+                    title = '缠绕膜售价变化对毛利率的影响';
+                    break;
+            }
+            
+            sensitivityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '吨袋毛利率 (%)',
+                            data: bagMargins,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: '缠绕膜毛利率 (%)',
+                            data: filmMargins,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.3,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: '毛利率 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '变化百分比 (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新开关UI状态
+        function updateToggleUI() {
+            const costItems = document.querySelectorAll('.cost-detail-item');
+            
+            // 吨袋成本项
+            costItems[0].classList.toggle('cost-item-disabled', !document.getElementById('toggle-bag-purchase').checked);
+            costItems[1].classList.toggle('cost-item-disabled', !document.getElementById('toggle-bag-shipping').checked);
+            costItems[2].classList.toggle('cost-item-disabled', !document.getElementById('toggle-bag-tariff').checked);
+            costItems[3].classList.toggle('cost-item-disabled', !document.getElementById('toggle-bag-storage').checked);
+            costItems[4].classList.toggle('cost-item-disabled', !document.getElementById('toggle-bag-capital').checked);
+            costItems[5].classList.toggle('cost-item-disabled', !document.getElementById('toggle-bag-labor').checked);
+            
+            // 缠绕膜成本项
+            costItems[6].classList.toggle('cost-item-disabled', !document.getElementById('toggle-film-purchase').checked);
+            costItems[7].classList.toggle('cost-item-disabled', !document.getElementById('toggle-film-shipping').checked);
+            costItems[8].classList.toggle('cost-item-disabled', !document.getElementById('toggle-film-tariff').checked);
+            costItems[9].classList.toggle('cost-item-disabled', !document.getElementById('toggle-film-storage').checked);
+            costItems[10].classList.toggle('cost-item-disabled', !document.getElementById('toggle-film-capital').checked);
+            costItems[11].classList.toggle('cost-item-disabled', !document.getElementById('toggle-film-labor').checked);
+        }
+        
+        // 保存配置
+        function saveConfig() {
+            const config = {
+                exchangeRate: document.getElementById('exchange-rate').value,
+                usdToCad: document.getElementById('usd-to-cad').value,
+                shippingCost: document.getElementById('shipping-cost').value,
+                palletStorage: document.getElementById('pallet-storage').value,
+                palletHandling: document.getElementById('pallet-handling').value,
+                storageTime: document.getElementById('storage-time').value,
+                interestRate: document.getElementById('interest-rate').value,
+                capitalTime: document.getElementById('capital-time').value,
+                tariffBag: document.getElementById('tariff-bag').value,
+                factoryPrice: document.getElementById('factory-price').value,
+                factoryPriceCurrency: document.getElementById('factory-price-currency').value,
+                containerSize: document.getElementById('container-size').value,
+                bagsPerPallet: document.getElementById('bags-per-pallet').value,
+                tariffFilm: document.getElementById('tariff-film').value,
+                filmUsage: document.getElementById('film-usage').value,
+                filmLength: document.getElementById('film-length').value,
+                filmFactoryPrice: document.getElementById('film-factory-price').value,
+                filmFactoryPriceCurrency: document.getElementById('film-factory-price-currency').value,
+                rollsPerContainer: document.getElementById('rolls-per-container').value,
+                rollsPerPallet: document.getElementById('rolls-per-pallet').value,
+                bagType1: document.getElementById('bag-type1').value,
+                bagType2: document.getElementById('bag-type2').value,
+                bagType3: document.getElementById('bag-type3').value,
+                filmType1: document.getElementById('film-type1').value,
+                filmType2: document.getElementById('film-type2').value,
+                filmType3: document.getElementById('film-type3').value,
+                currentBagType: currentBagType,
+                currentFilmType: currentFilmType,
+                laborRate: document.getElementById('labor-rate').value,
+                laborCount: document.getElementById('labor-count').value,
+                dailyHours: document.getElementById('daily-hours').value,
+                workDays: document.getElementById('work-days').value,
+                monthlyBags: document.getElementById('monthly-bags').value,
+                monthlyRolls: document.getElementById('monthly-rolls').value,
+                toggleBagPurchase: document.getElementById('toggle-bag-purchase').checked,
+                toggleBagShipping: document.getElementById('toggle-bag-shipping').checked,
+                toggleBagTariff: document.getElementById('toggle-bag-tariff').checked,
+                toggleBagStorage: document.getElementById('toggle-bag-storage').checked,
+                toggleBagCapital: document.getElementById('toggle-bag-capital').checked,
+                toggleBagLabor: document.getElementById('toggle-bag-labor').checked,
+                toggleFilmPurchase: document.getElementById('toggle-film-purchase').checked,
+                toggleFilmShipping: document.getElementById('toggle-film-shipping').checked,
+                toggleFilmTariff: document.getElementById('toggle-film-tariff').checked,
+                toggleFilmStorage: document.getElementById('toggle-film-storage').checked,
+                toggleFilmCapital: document.getElementById('toggle-film-capital').checked,
+                toggleFilmLabor: document.getElementById('toggle-film-labor').checked,
+                bagsInWarehouse: document.getElementById('bags-in-warehouse').value,
+                bagsAtSea: document.getElementById('bags-at-sea').value,
+                bagsInChina: document.getElementById('bags-in-china').value,
+                filmInWarehouse: document.getElementById('film-in-warehouse').value,
+                filmAtSea: document.getElementById('film-at-sea').value,
+                filmInChina: document.getElementById('film-in-china').value,
+                bundleDiscount: document.getElementById('bundle-discount').value,
+                bagUnderDeclaration: document.getElementById('bag-under-declaration').value,
+                filmUnderDeclaration: document.getElementById('film-under-declaration').value
+            };
+            
+            localStorage.setItem('bagFilmCostCalcConfig', JSON.stringify(config));
+            
+            // 显示保存成功通知
+            const notification = document.getElementById('saveNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 加载配置
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('bagFilmCostCalcConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                
+                document.getElementById('exchange-rate').value = config.exchangeRate || 0.186;
+                document.getElementById('usd-to-cad').value = config.usdToCad || 1.35;
+                document.getElementById('shipping-cost').value = config.shippingCost || 5000;
+                document.getElementById('pallet-storage').value = config.palletStorage || 16;
+                document.getElementById('pallet-handling').value = config.palletHandling || 25;
+                document.getElementById('storage-time').value = config.storageTime || 2;
+                document.getElementById('interest-rate').value = config.interestRate || 6;
+                document.getElementById('capital-time').value = config.capitalTime || 4;
+                document.getElementById('tariff-bag').value = config.tariffBag || 18;
+                document.getElementById('factory-price').value = config.factoryPrice || 15;
+                document.getElementById('factory-price-currency').value = config.factoryPriceCurrency || 'CNY';
+                document.getElementById('container-size').value = config.containerSize || 12000;
+                document.getElementById('bags-per-pallet').value = config.bagsPerPallet || 200;
+                document.getElementById('tariff-film').value = config.tariffFilm || 0;
+                document.getElementById('film-usage').value = config.filmUsage || 30;
+                document.getElementById('film-length').value = config.filmLength || 450;
+                document.getElementById('film-factory-price').value = config.filmFactoryPrice || 20;
+                document.getElementById('film-factory-price-currency').value = config.filmFactoryPriceCurrency || 'CNY';
+                document.getElementById('rolls-per-container').value = config.rollsPerContainer || 3200;
+                document.getElementById('rolls-per-pallet').value = config.rollsPerPallet || 96;
+                document.getElementById('bag-type1').value = config.bagType1 || 10.08;
+                document.getElementById('bag-type2').value = config.bagType2 || 9.14;
+                document.getElementById('bag-type3').value = config.bagType3 || 10.34;
+                document.getElementById('film-type1').value = config.filmType1 || 15;
+                document.getElementById('film-type2').value = config.filmType2 || 15;
+                document.getElementById('film-type3').value = config.filmType3 || 15;
+                document.getElementById('labor-rate').value = config.laborRate || 25;
+                document.getElementById('labor-count').value = config.laborCount || 1;
+                document.getElementById('daily-hours').value = config.dailyHours || 8;
+                document.getElementById('work-days').value = config.workDays || 22;
+                document.getElementById('monthly-bags').value = config.monthlyBags || 12000;
+                document.getElementById('monthly-rolls').value = config.monthlyRolls || 5000;
+                document.getElementById('bags-in-warehouse').value = config.bagsInWarehouse || 2;
+                document.getElementById('bags-at-sea').value = config.bagsAtSea || 1;
+                document.getElementById('bags-in-china').value = config.bagsInChina || 2;
+                document.getElementById('film-in-warehouse').value = config.filmInWarehouse || 1;
+                document.getElementById('film-at-sea').value = config.filmAtSea || 2;
+                document.getElementById('film-in-china').value = config.filmInChina || 1;
+                document.getElementById('bundle-discount').value = config.bundleDiscount || 5.0;
+                document.getElementById('bag-under-declaration').value = config.bagUnderDeclaration || 1.0;
+                document.getElementById('film-under-declaration').value = config.filmUnderDeclaration || 1.0;
+                
+                // 恢复选中的吨袋类型
+                if (config.currentBagType) {
+                    selectBagType(config.currentBagType);
+                }
+                
+                // 恢复选中的缠绕膜类型
+                if (config.currentFilmType) {
+                    selectFilmType(config.currentFilmType);
+                }
+                
+                // 恢复开关状态
+                if (config.toggleBagPurchase !== undefined) {
+                    document.getElementById('toggle-bag-purchase').checked = config.toggleBagPurchase;
+                }
+                if (config.toggleBagShipping !== undefined) {
+                    document.getElementById('toggle-bag-shipping').checked = config.toggleBagShipping;
+                }
+                if (config.toggleBagTariff !== undefined) {
+                    document.getElementById('toggle-bag-tariff').checked = config.toggleBagTariff;
+                }
+                if (config.toggleBagStorage !== undefined) {
+                    document.getElementById('toggle-bag-storage').checked = config.toggleBagStorage;
+                }
+                if (config.toggleBagCapital !== undefined) {
+                    document.getElementById('toggle-bag-capital').checked = config.toggleBagCapital;
+                }
+                if (config.toggleBagLabor !== undefined) {
+                    document.getElementById('toggle-bag-labor').checked = config.toggleBagLabor;
+                }
+                if (config.toggleFilmPurchase !== undefined) {
+                    document.getElementById('toggle-film-purchase').checked = config.toggleFilmPurchase;
+                }
+                if (config.toggleFilmShipping !== undefined) {
+                    document.getElementById('toggle-film-shipping').checked = config.toggleFilmShipping;
+                }
+                if (config.toggleFilmTariff !== undefined) {
+                    document.getElementById('toggle-film-tariff').checked = config.toggleFilmTariff;
+                }
+                if (config.toggleFilmStorage !== undefined) {
+                    document.getElementById('toggle-film-storage').checked = config.toggleFilmStorage;
+                }
+                if (config.toggleFilmCapital !== undefined) {
+                    document.getElementById('toggle-film-capital').checked = config.toggleFilmCapital;
+                }
+                if (config.toggleFilmLabor !== undefined) {
+                    document.getElementById('toggle-film-labor').checked = config.toggleFilmLabor;
+                }
+                
+                // 更新货币切换按钮状态
+                updateCurrencyButtons();
+            } else {
+                // 默认选中第一个规格
+                selectBagType("1");
+                selectFilmType("80ga");
+            }
+        }
+        
+        // 更新货币切换按钮状态
+        function updateCurrencyButtons() {
+            // 吨袋货币按钮
+            const bagCurrency = document.getElementById('factory-price-currency').value;
+            const bagCurrencySwitch = document.querySelector('.bag-costs-section .currency-switch');
+            bagCurrencySwitch.querySelectorAll('.currency-option').forEach(option => {
+                option.classList.toggle('active', option.dataset.currency === bagCurrency);
+            });
+            
+            // 缠绕膜货币按钮
+            const filmCurrency = document.getElementById('film-factory-price-currency').value;
+            const filmCurrencySwitch = document.querySelector('.film-costs-section .currency-switch');
+            filmCurrencySwitch.querySelectorAll('.currency-option').forEach(option => {
+                option.classList.toggle('active', option.dataset.currency === filmCurrency);
+            });
+        }
+        
+        // 重置表单
+        function resetForm() {
+            document.getElementById('exchange-rate').value = '0.186';
+            document.getElementById('usd-to-cad').value = '1.35';
+            document.getElementById('shipping-cost').value = '5000';
+            document.getElementById('pallet-storage').value = '16';
+            document.getElementById('pallet-handling').value = '25';
+            document.getElementById('storage-time').value = '2';
+            document.getElementById('interest-rate').value = '6';
+            document.getElementById('capital-time').value = '4';
+            document.getElementById('tariff-bag').value = '18';
+            document.getElementById('factory-price').value = '15';
+            document.getElementById('factory-price-currency').value = 'CNY';
+            document.getElementById('container-size').value = '12000';
+            document.getElementById('bags-per-pallet').value = '200';
+            document.getElementById('tariff-film').value = '0';
+            document.getElementById('film-usage').value = '30';
+            document.getElementById('film-length').value = '450';
+            document.getElementById('film-factory-price').value = '20';
+            document.getElementById('film-factory-price-currency').value = 'CNY';
+            document.getElementById('rolls-per-container').value = '3200';
+            document.getElementById('rolls-per-pallet').value = '96';
+            document.getElementById('bag-type1').value = '10.08';
+            document.getElementById('bag-type2').value = '9.14';
+            document.getElementById('bag-type3').value = '10.34';
+            document.getElementById('film-type1').value = '15';
+            document.getElementById('film-type2').value = '15';
+            document.getElementById('film-type3').value = '15';
+            document.getElementById('labor-rate').value = '25';
+            document.getElementById('labor-count').value = '1';
+            document.getElementById('daily-hours').value = '8';
+            document.getElementById('work-days').value = '22';
+            document.getElementById('monthly-bags').value = '12000';
+            document.getElementById('monthly-rolls').value = '5000';
+            document.getElementById('bags-in-warehouse').value = '2';
+            document.getElementById('bags-at-sea').value = '1';
+            document.getElementById('bags-in-china').value = '2';
+            document.getElementById('film-in-warehouse').value = '1';
+            document.getElementById('film-at-sea').value = '2';
+            document.getElementById('film-in-china').value = '1';
+            document.getElementById('bundle-discount').value = '5.0';
+            document.getElementById('bag-under-declaration').value = '1.0';
+            document.getElementById('film-under-declaration').value = '1.0';
+            
+            // 重置开关状态
+            document.getElementById('toggle-bag-purchase').checked = true;
+            document.getElementById('toggle-bag-shipping').checked = true;
+            document.getElementById('toggle-bag-tariff').checked = true;
+            document.getElementById('toggle-bag-storage').checked = true;
+            document.getElementById('toggle-bag-capital').checked = true;
+            document.getElementById('toggle-bag-labor').checked = true;
+            document.getElementById('toggle-film-purchase').checked = true;
+            document.getElementById('toggle-film-shipping').checked = true;
+            document.getElementById('toggle-film-tariff').checked = true;
+            document.getElementById('toggle-film-storage').checked = true;
+            document.getElementById('toggle-film-capital').checked = true;
+            document.getElementById('toggle-film-labor').checked = true;
+            
+            // 重置吨袋选择
+            selectBagType("1");
+            selectFilmType("80ga");
+            
+            // 更新货币按钮状态
+            updateCurrencyButtons();
+            
+            calculate();
+        }
+        
+        // 选择吨袋类型
+        function selectBagType(type) {
+            // 更新当前选中的吨袋类型
+            currentBagType = type;
+            
+            // 更新UI选中状态
+            document.querySelectorAll('.bag-type').forEach(el => {
+                if (el.dataset.type === type) {
+                    el.classList.add('selected');
+                    
+                    // 更新销售价
+                    const price = parseFloat(el.querySelector('.bag-price-input').value);
+                    
+                    // 更新选中的吨袋信息
+                    document.getElementById('selected-bag-spec').textContent = el.querySelector('.bag-spec').textContent;
+                    document.getElementById('selected-bag-price').textContent = price.toFixed(2);
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+            
+            calculate();
+        }
+        
+        // 选择缠绕膜类型
+        function selectFilmType(type) {
+            // 更新当前选中的缠绕膜类型
+            currentFilmType = type;
+            
+            // 更新UI选中状态
+            document.querySelectorAll('.film-type').forEach(el => {
+                if (el.dataset.type === type) {
+                    el.classList.add('selected');
+                    
+                    // 更新销售价
+                    const price = parseFloat(el.querySelector('.film-price-input').value);
+                    
+                    // 更新选中的缠绕膜信息
+                    document.getElementById('selected-film-spec').textContent = type;
+                    document.getElementById('selected-film-price').textContent = price.toFixed(2);
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+            
+            calculate();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加吨袋选择事件监听器
+            document.querySelectorAll('.bag-type').forEach(el => {
+                el.addEventListener('click', function() {
+                    selectBagType(this.dataset.type);
+                });
+                
+                // 添加吨袋价格输入事件监听器
+                const input = el.querySelector('.bag-price-input');
+                input.addEventListener('input', function() {
+                    // 如果当前输入的是选中的吨袋类型，更新销售价
+                    if (el.classList.contains('selected')) {
+                        document.getElementById('selected-bag-price').textContent = this.value;
+                        calculate();
+                    }
+                });
+            });
+            
+            // 添加缠绕膜选择事件监听器
+            document.querySelectorAll('.film-type').forEach(el => {
+                el.addEventListener('click', function() {
+                    selectFilmType(this.dataset.type);
+                });
+                
+                // 添加缠绕膜价格输入事件监听器
+                const input = el.querySelector('.film-price-input');
+                input.addEventListener('input', function() {
+                    // 如果当前输入的是选中的缠绕膜类型，更新销售价
+                    if (el.classList.contains('selected')) {
+                        document.getElementById('selected-film-price').textContent = this.value;
+                        calculate();
+                    }
+                });
+            });
+            
+            // 添加开关事件监听器
+            document.querySelectorAll('.toggle input').forEach(toggle => {
+                toggle.addEventListener('change', calculate);
+            });
+            
+            // 添加输入事件监听器
+            const inputs = document.querySelectorAll('input:not(.bag-price-input):not(.film-price-input)');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculate);
+            });
+            
+            // 添加敏感性分析变量选择监听
+            document.getElementById('sensitivity-var').addEventListener('change', calculate);
+            document.getElementById('sensitivity-range').addEventListener('change', calculate);
+            
+            // 添加货币切换功能
+            document.querySelectorAll('.currency-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const container = this.closest('.currency-switch');
+                    container.querySelectorAll('.currency-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 更新对应的选择框
+                    const currency = this.dataset.currency;
+                    const selectId = this.closest('.param-item').querySelector('select').id;
+                    document.getElementById(selectId).value = currency;
+                    
+                    calculate();
+                });
+            });
+            
+            // 加载保存的配置
+            loadConfig();
+            
+            // 初始计算
+            calculate();
+        });
+    </script>
+</body>
+</html>
